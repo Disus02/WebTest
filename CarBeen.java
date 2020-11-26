@@ -1,0 +1,58 @@
+package ru.sapteh;
+
+import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Named;
+
+@Named
+@SessionScoped
+public class CarBeen implements Serializable {
+
+    private static final long serialVersionUID = 6081417964063918994L;
+        public List<Car> getCars() throws ClassNotFoundException, SQLException {
+
+            Connection connect = null;
+
+            String url = "jdbc:mysql://localhost:3306/cardb?serverTimezone=UTC";
+
+            String username = "root";
+            String password = "1234";
+            List<Car> cars = new ArrayList<Car>();
+
+            try {
+                Class.forName("com.mysql.jdbc.Driver");
+                connect = DriverManager.getConnection(url, username, password);
+                // System.out.println("Connection established"+connect);
+                PreparedStatement pstmt = connect.prepareStatement("select car_id, cname, color, speed, Manufactured_Country from Car");
+                ResultSet rs = pstmt.executeQuery();
+
+                while (rs.next()) {
+
+                    Car car = new Car();
+                    car.setCid(rs.getInt("car_id"));
+                    car.setCname(rs.getString("cname"));
+                    car.setColor(rs.getString("color"));
+                    car.setSpeed(rs.getInt("speed"));
+                    car.setMfdctry(rs.getString("Manufactured_Country"));
+                    cars.add(car);
+                }
+                // close resources
+                rs.close();
+                pstmt.close();
+                connect.close();
+            } catch (SQLException ex) {
+                System.out.println("in exec");
+                System.out.println(ex.getMessage());
+            }
+            return cars;
+        }
+
+}
+
